@@ -1,17 +1,25 @@
 require("dotenv").config();
+const axios = require("axios");
 const { connect, JSONCodec } = require("nats");
 let nc;
 const jc = JSONCodec();
+const webhookUrl = process.env.WEBHOOK;
+
+console.log(webhookUrl);
 
 async function initNats() {
   try {
     nc = await connect({ servers: process.env.NATS_URL });
     console.log("NATS connected successfully");
 
-    const sub = nc.subscribe("todo_status");
+    const sub = nc.subscribe("todo_status", { queue: "todo_workers" });
 
     for await (const m of sub) {
-      console.log(`[${sub.getProcessed()}]: ${jc.decode(m.data).status}`);
+      const payload = jc.decode(m.data);
+      console.log(`[${sub.getProcessed()}]: ${payload.status}`);
+      await axios.post(webhookUrl, {
+        content: `Todo status update: ${payload.status}`,
+      });
     }
 
     console.log("subscription closed");
