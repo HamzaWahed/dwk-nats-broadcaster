@@ -19,7 +19,8 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Build and publish image
-        run: docker build . -t hzd454/nats-broadcaster:$GITHUB_SHA -- push
+        run: |-
+          docker build . -t hzd454/nats-broadcaster:$GITHUB_SHA --push
 
       - name: Checkout manifests repository
         uses: actions/checkout@v4
