@@ -19,13 +19,12 @@ jobs:
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Build and publish image
-        run: |-
-          docker build . -t hzd454/nats-broadcaster:$GITHUB_SHA --push
+        run: docker build . -t hzd454/nats-broadcaster:$GITHUB_SHA --push
 
       - name: Checkout manifests repository
         uses: actions/checkout@v4
         with:
-          repository: https://github.com/HamzaWahed/dwk-todo-manifests
+          repository: HamzaWahed/dwk-todo-manifests
           token: ${{ secrets.MANIFESTS_REPO_PAT }}
           path: .
 
