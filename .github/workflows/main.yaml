@@ -34,10 +34,10 @@ jobs:
       - name: Update image tag
         run: |
           if [[ "${GITHUB_REF}" = "refs/heads/main" ]]; then
-            cd overlays/staging
+            cd manifests/overlays/staging
             kustomize edit set image PROJECT/NATS_IMAGE=hzd454/nats-broadcaster:${GITHUB_SHA}
           elif [[ "${GITHUB_REF}" = "refs/tags/*" ]]; then
-            cd overlays/prod
+            cd manifests/overlays/prod
             kustomize edit set image PROJECT/NATS_IMAGE=hzd454/nats-broadcaster:${GITHUB_SHA}
           else
             echo "Not a main branch push or tagged commit. Skipping update."
