@@ -23,7 +23,7 @@ async function initNats() {
       }
     }
 
-    console.log("subscription closed");
+    console.log("subscription closed!");
   } catch (error) {
     console.error("Failed to connect to NATS:", error);
     process.exit(1);
