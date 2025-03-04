@@ -4,6 +4,7 @@ const { connect, JSONCodec } = require("nats");
 let nc;
 const jc = JSONCodec();
 const webhookUrl = process.env.WEBHOOK;
+const staging = process.env.STAGING;
 
 console.log(webhookUrl);
 
@@ -17,9 +18,11 @@ async function initNats() {
     for await (const m of sub) {
       const payload = jc.decode(m.data);
       console.log(`[${sub.getProcessed()}]: ${payload.status}`);
-      await axios.post(webhookUrl, {
-        content: `Todo status update: ${payload.status}`,
-      });
+      if (!staging) {
+        await axios.post(webhookUrl, {
+          content: `Todo status update: ${payload.status}`,
+        });
+      }
     }
 
     console.log("subscription closed");

@@ -1,0 +1,50 @@
+name: Build and release application
+
+on:
+  push:
+
+jobs:
+  build-publish:
+    runs-on: ubuntu-latest
+    name: Build, Push, and Release
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and publish image
+        run: docker build . -t hzd454/nats-broadcaster:$GITHUB_SHA -- push
+
+      - name: Checkout manifests repository
+        uses: actions/checkout@v4
+        with:
+          repository: https://github.com/HamzaWahed/dwk-todo-manifests
+          token: ${{ secrets.MANIFESTS_REPO_PAT }}
+          path: .
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+
+      - name: Update image tag
+        run: |
+          if [[ "${GITHUB_REF}" = "refs/head/main" ]]; then
+            cd overlays/staging
+            kustomize edit set image PROJECT/NATS_IMAGE=hzd454/nats-broadcaster:${GITHUB_SHA}
+          elif [[ "${GITHUB_REF}" = "refs/tags/*" ]]; then
+            cd overlays/prod
+            kustomize edit set image PROJECT/NATS_IMAGE=hzd454/nats-broadcaster:${GITHUB_SHA}
+          else
+            echo "Not a main branch push or tagged commit. Skipping update."
+          fi
+
+      - name: commit kustomization.yaml to GitHub
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: "kustomization.yaml"
+          message: New version released at ${{ github.sha }}
