@@ -6,8 +6,6 @@ const jc = JSONCodec();
 const webhookUrl = process.env.WEBHOOK;
 const staging = process.env.STAGING;
 
-console.log(webhookUrl);
-
 async function initNats() {
   try {
     nc = await connect({ servers: process.env.NATS_URL });
